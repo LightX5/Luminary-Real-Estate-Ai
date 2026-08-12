@@ -301,13 +301,13 @@
     <div class="chat-header">
       <div class="agent-avatar" id="agentInitial">A</div>
       <div class="agent-info">
-        <div class="agent-name" id="agentNameDisplay">Aria</div>
+        <div class="agent-name" id="agentNameDisplay">Ava</div>
         <div class="agent-status">
           <div class="status-dot"></div>
           Online — typically replies instantly
         </div>
       </div>
-      <div class="company-badge" id="companyBadge">Company</div>
+      <div class="company-badge" id="companyBadge">Luminary Realty</div>
     </div>
 
     <div class="chat-messages" id="chatMessages"></div>
@@ -333,14 +333,14 @@
 <script>
   // ─── CONFIG ──────────────────────────────────────────────────────────────────
   // Change this to your deployed backend URL when going live
-  const API_BASE = '/api';
+  const API_BASE = 'http://localhost:4000/api';
 
   let history = [];
   let config = {
-    companyName: 'Our Company',
-    agentName: 'Aria',
-    welcomeMessage: "Hello! I'm Aria, your virtual assistant. How can I help you today?",
-    primaryColor: '#0052CC',
+    companyName: 'Luminary Realty',
+    agentName: 'Ava',
+    welcomeMessage: "Hi! I'm Ava, your AI real estate assistant. Looking to buy, sell, or rent? 🏡",
+    primaryColor: '#1F3B57',
   };
 
   // ─── HELPERS ─────────────────────────────────────────────────────────────────
