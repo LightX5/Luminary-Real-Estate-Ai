@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Customer Service</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --brand: #0052CC;
+      --brand-dark: #003D99;
+      --brand-light: #E6EEFF;
+      --bg: #F7F9FC;
+      --surface: #FFFFFF;
+      --text: #1A1D23;
+      --muted: #6B7280;
+      --border: #E5E7EB;
+      --bot-bubble: #F0F4FF;
+      --user-bubble: var(--brand);
+      --radius: 18px;
+      --shadow: 0 8px 32px rgba(0,82,204,0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .demo-page {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .demo-label {
+      font-family: 'Sora', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .chat-widget {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 620px;
+    }
+
+    .chat-header {
+      background: var(--brand);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .agent-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .agent-info { flex: 1; }
+
+    .agent-name {
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      color: white;
+    }
+
+    .agent-status {
+      font-size: 12px;
+      color: rgba(255,255,255,0.75);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 2px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4ADE80;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .company-badge {
+      font-size: 11px;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .message {
+      display: flex;
+      gap: 10px;
+      animation: fadeUp 0.3s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user { flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--brand-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    .message.user .msg-avatar {
+      background: var(--brand);
+      color: white;
+    }
+
+    .bubble {
+      max-width: 72%;
+      min-width: 60px;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bot-bubble);
+      border-bottom-left-radius: 4px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .message.user .bubble {
+      background: var(--user-bubble);
+      color: white;
+      border-bottom-left-radius: var(--radius);
+      border-bottom-right-radius: 4px;
+    }
+
+    .bubble-time {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+      padding: 0 4px;
+    }
+
+    .message.user .bubble-time { text-align: right; }
+
+    .typing-indicator {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .typing-dots {
+      background: var(--bot-bubble);
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      border-bottom-left-radius: 4px;
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--brand);
+      opacity: 0.4;
+      animation: bounce 1.2s infinite;
+    }
+
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-6px); opacity: 1; }
+    }
+
+    .chat-input-area {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      background: white;
+    }
+
+    .chat-input {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      max-height: 100px;
+      overflow-y: auto;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .chat-input:focus { border-color: var(--brand); }
+    .chat-input::placeholder { color: var(--muted); }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--brand);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .send-btn:hover { background: var(--brand-dark); }
+    .send-btn:active { transform: scale(0.95); }
+    .send-btn:disabled { background: var(--border); cursor: not-allowed; }
+
+    .send-btn svg { width: 20px; height: 20px; fill: white; }
+
+    .powered-by {
+      text-align: center;
+      font-size: 10px;
+      color: var(--muted);
+      padding: 8px;
+      background: var(--bg);
+      letter-spacing: 0.5px;
+    }
+
+    .powered-by span { color: var(--brand); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="demo-page">
+  <p class="demo-label">✦ Live Demo</p>
+
+  <div class="chat-widget" id="chatWidget">
+    <div class="chat-header">
+      <div class="agent-avatar" id="agentInitial">A</div>
+      <div class="agent-info">
+        <div class="agent-name" id="agentNameDisplay">Aria</div>
+        <div class="agent-status">
+          <div class="status-dot"></div>
+          Online — typically replies instantly
+        </div>
+      </div>
+      <div class="company-badge" id="companyBadge">Company</div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages"></div>
+
+    <div class="chat-input-area">
+      <textarea
+        class="chat-input"
+        id="chatInput"
+        placeholder="Type your message..."
+        rows="1"
+      ></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="powered-by">Powered by <span>Luminary</span> — Chatbot Customer Service</div>
+  </div>
+</div>
+
+<script>
+  // ─── CONFIG ──────────────────────────────────────────────────────────────────
+  // Change this to your deployed backend URL when going live
+  const API_BASE = 'http://localhost:4000/api';
+
+  let history = [];
+  let config = {
+    companyName: 'Our Company',
+    agentName: 'Aria',
+    welcomeMessage: "Hello! I'm Aria, your virtual assistant. How can I help you today?",
+    primaryColor: '#0052CC',
+  };
+
+  // ─── HELPERS ─────────────────────────────────────────────────────────────────
+  function getTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function shadeColor(color, percent) {
+    let R = parseInt(color.substring(1, 3), 16);
+    let G = parseInt(color.substring(3, 5), 16);
+    let B = parseInt(color.substring(5, 7), 16);
+    R = Math.min(255, Math.max(0, Math.round(R * (100 + percent) / 100)));
+    G = Math.min(255, Math.max(0, Math.round(G * (100 + percent) / 100)));
+    B = Math.min(255, Math.max(0, Math.round(B * (100 + percent) / 100)));
+    return '#' + R.toString(16).padStart(2, '0') + G.toString(16).padStart(2, '0') + B.toString(16).padStart(2, '0');
+  }
+
+  // ─── FIX 1: applyConfigUI is now its own function (was missing before) ───────
+  function applyConfigUI() {
+    document.getElementById('agentNameDisplay').textContent = config.agentName;
+    document.getElementById('agentInitial').textContent = config.agentName.charAt(0).toUpperCase();
+    document.getElementById('companyBadge').textContent = config.companyName;
+    document.documentElement.style.setProperty('--brand', config.primaryColor);
+    document.documentElement.style.setProperty('--brand-dark', shadeColor(config.primaryColor, -20));
+    document.documentElement.style.setProperty('--brand-light', shadeColor(config.primaryColor, 90) + '33');
+  }
+
+  // applyConfig calls applyConfigUI (which now actually exists) then shows welcome
+  function applyConfig() {
+    applyConfigUI();
+    addBotMessage(config.welcomeMessage);
+  }
+
+  // ─── FIX 2: addBotMessage uses textContent, not innerHTML (XSS fix) ──────────
+  function addBotMessage(text) {
+    const container = document.getElementById('chatMessages');
+    const el = document.createElement('div');
+    el.className = 'message bot';
+    el.innerHTML = `
+      <div class="msg-avatar">${config.agentName.charAt(0)}</div>
+      <div>
+        <div class="bubble"></div>
+        <div class="bubble-time">${getTime()}</div>
+      </div>`;
+    // Set message text safely — prevents XSS
+    el.querySelector('.bubble').textContent = text;
+    container.appendChild(el);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // ─── FIX 2 (continued): addUserMessage also uses textContent ─────────────────
+  function addUserMessage(text) {
+    const container = document.getElementById('chatMessages');
+    const el = document.createElement('div');
+    el.className = 'message user';
+    el.innerHTML = `
+      <div class="msg-avatar">U</div>
+      <div>
+        <div class="bubble"></div>
+        <div class="bubble-time">${getTime()}</div>
+      </div>`;
+    // Set message text safely — prevents XSS
+    el.querySelector('.bubble').textContent = text;
+    container.appendChild(el);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function showTyping() {
+    const container = document.getElementById('chatMessages');
+    const el = document.createElement('div');
+    el.className = 'typing-indicator';
+    el.id = 'typingIndicator';
+    el.innerHTML = `
+      <div class="msg-avatar">${config.agentName.charAt(0)}</div>
+      <div class="typing-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>`;
+    container.appendChild(el);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function hideTyping() {
+    const el = document.getElementById('typingIndicator');
+    if (el) el.remove();
+  }
+
+  // ─── SEND MESSAGE ─────────────────────────────────────────────────────────────
+  async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const btn = document.getElementById('sendBtn');
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+    btn.disabled = true;
+
+    addUserMessage(text);
+    history.push({ role: 'user', content: text });
+
+    showTyping();
+
+    // Refresh config before each send so admin changes apply to responses immediately
+    try {
+      const configRes = await fetch(`${API_BASE}/config`);
+      if (configRes.ok) {
+        const freshConfig = await configRes.json();
+        config = { ...config, ...freshConfig };
+        applyConfigUI();
+      }
+    } catch (e) { /* keep existing config if fetch fails */ }
+
+    try {
+      const res = await fetch(`${API_BASE}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history: history.slice(-10) }),
+      });
+      const data = await res.json();
+      hideTyping();
+
+      if (data.reply) {
+        addBotMessage(data.reply);
+        history.push({ role: 'assistant', content: data.reply });
+      } else {
+        addBotMessage("Sorry, I couldn't process that. Please try again.");
+      }
+    } catch (err) {
+      hideTyping();
+      addBotMessage("I'm having trouble connecting right now. Please try again shortly.");
+    }
+
+    btn.disabled = false;
+    input.focus();
+  }
+
+  // ─── LOAD CONFIG ON PAGE START ────────────────────────────────────────────────
+  async function loadConfig() {
+    try {
+      const res = await fetch(`${API_BASE}/config`);
+      if (res.ok) {
+        const data = await res.json();
+        config = { ...config, ...data };
+      }
+    } catch (e) {
+      // Server not reachable — use defaults defined above
+    }
+    // Always call applyConfig regardless of fetch success/failure
+    applyConfig();
+  }
+
+  // ─── INPUT EVENTS ─────────────────────────────────────────────────────────────
+  document.getElementById('chatInput').addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+  });
+
+  document.getElementById('chatInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // Kick everything off
+  loadConfig();
+</script>
+</body>
+</html>
